@@ -27,17 +27,17 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # username: '' // optional
-  # password: '' // optional
+  # username: '' # optional
+  # password: '' # optional
   pool: 5
   timeout: 5000
   # host: ''
 development:
   <<: *default
-  database: '' //enter db name here
+  database: '' #enter db name here
 test:
   <<: *default
-  database: '' //enter db name here
+  database: '' #enter db name here
 production:
   <<: *default
-  database: '' //enter db name here
+  database: '' #enter db name here
