@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>hljs.initHighlightingOnLoad();</script>
+  <title>Webhooks</title>
+</head>
+<body style="background-color:black;">
+  <div align="center" class="headerStyle">
+    <h1>Webhook Handler</h1>
+  </div>
+  <div class="col-md-8 col-md-offset-2 text-center">
+    <div id="accordion">
+      <div class="panel-heading text-center">
+        <h4><a data-toggle="collapse" data-parent="#accordion" href="#collapse1"  style = "text-decoration:none; color:white; font-weight:light; font-family:monospace;">Search Options <i class="fas fa-caret-down"></i> </a></h4>
+      </div>
+      <div class="panel-body collapse" id="collapse1">
+        <div class="panel-heading text-center">
+          <h5><a data-toggle="collapse" data-parent="#accordion" href="#collapse2"  style = "text-decoration:none; color:white; font-weight:light; font-family:monospace;">Webhook Kinds <i class="fas fa-caret-down"></i></a></h5>
+        </div>
+        <div class="col-md-12 panel-body collapse" id="collapse2" style="color:white; font-family:monospace;">
+          <%= form_tag("/search", method: "post", id: "payment-form") do %>
+          <div class="form-group text-left">
+            <div class="col-md-2 col-md-offset-4" id="searchFilterOptions1">
+              <div class="checkbox">
+                <label><input type="checkbox" value="check" id="filterTest" name="filterTest">Test</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="account_updater" id="filterAu" name="filterAu">Account Updater</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="connected_merchant" id="filterBtAuth" name="filterBtAuth">Braintree Auth</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="disburse" id="filterDisbursement" name="filterDisbursement">Disbursement</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="dispute" id="filterDispute" name="filterDispute">Dispute</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="granted" id="filterGrant" name="filterGrant">Grant API</label>
+              </div>
+            </div>
+            <div class="col-md-3 col-md-offset-0" id="searchFilterOptions2">
+              <div class="checkbox">
+                <label><input type="checkbox" value="local_payment_completed" id="filterLpm" name="filterLpm">Local Payment Methods</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="oauth" id="filterOauth" name="filterOauth">OAuth</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="payment_method_revoked_by_customer" id="filterPaymentMethod" name="filterPaymentMethod">Payment Method</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="sub_merchant" id="filterSubmerchant" name="filterSubmerchant">Sub-merchant Account</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="subscription" id="filterSubscription" name="filterSubscription">Subscription</label>
+              </div>
+              <div class="checkbox">
+                <label><input type="checkbox" value="transaction" id="filterTransaction" name="filterTransaction">Transaction</label>
+              </div>
+              <input type="hidden" id="allunchecked" name="allunchecked">
+            </div>
+          </div>
+        </div>
+        <div class="panel-heading text-center">
+          <h5><a data-toggle="collapse" data-parent="#accordion" href="#collapse3"  style = "text-decoration:none; color:white; font-weight:light; font-family:monospace;">Date Range <i class="fas fa-caret-down"></i></a></h5>
+        </div>
+        <div class="col-md-12 text-center panel-body collapse text-center" id="collapse3" style="color:white; font-family:monospace;">
+          <div class="col-md-4">
+          </div>
+          <div class="col-md-4  text-center" id="dateRangeOptions">
+            <label for="startDate">Start Date</label>
+            <input type="date" class="form-control text-center" id="startDate"
+            name="startDate"
+            min="2012-01-01" max="2050-12-31">
+
+            <input type="time" class="form-control text-center" id="startTime"
+            name="startTime" value="00:00">
+
+            <label for="endDate">End date</label>
+            <input type="date" class="form-control text-center" id="endDate"
+            name="endDate"
+            min="2012-01-01" max="2050-12-31" >
+
+            <input type="time" class="form-control text-center" id="endTime"
+            name="endTime" value="00:00">
+          </div>
+          <div class="col-md-4">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% end %>
+  <div>
+    <div class="col-md-12 text-center" style="margin-bottom:15px;  margin-top:20px; font-family:monospace">
+      <button type="submit" id="submit" class="btn btn-default">Fetch Webhooks</button>
+    </div>
+  </div>
+  <div class ="col-md-12 text-left">
+    <p style="color:white; font-family:monospace;">Connected to sandbox ID:
+      <code style="background-color:black; color:chartreuse;"><%= @merchant_id%></code>
+      <button style="font-size:14px" type="button" onclick="reveal()"id="showCode" class="btn btn-default">Show Guts</button>
+    </p>
+  </div>
+  <table class="table table-bordered tables" id="table">
+    <tr>
+      <th style="width:20%;""> Kind </th>
+      <th style="width:20%;"> Timestamp </th>
+      <th style="width:80%;"> Object </th>
+    </tr>
+    <% @webhooks.each do |webhook| %>
+    <tr class="tableRows">
+      <td style="width:15%;"><%= webhook.kind%></td>
+      <td style="width:15%;"><%= webhook.timestamp%></td>
+      <td style="width:70%;">
+        <a type="button" class="collapsible">View Result Object</a>
+        <div class="content">
+          <button style="background-color:black, color:white;" class="copy">copy</button>
+          <div class="textArea">
+            <p><pre><code><%= webhook.object%></code></pre></p>
+          </div>
+        </div>
+      </td>
+    </tr>
+    <% end %>
+  </table>
+  <div id="codeShown" style="background-color:black;" hidden>
+    <p><pre><code class="ruby" id="ruby"style="background-color:#151e1e; color:grey;">
+      SERVER-SIDE/Ruby:
+
+
+      #Gateway configuration. Inputting API keys directly into your server-side code is largely considered
+      #not secure. As good practice, your API keys are saved as environmental variables in a yml file that is
+      #ignored from git and shielded from the pages that carry out server-side requests.
+
+      def gateway
+      Braintree::Gateway.new(
+      environment: :sandbox,
+      merchant_id: ENV["MERCHANT_ID"],
+      public_key: ENV["PUBLIC_KEY"],
+      private_key: ENV["PRIVATE_KEY"],
+      )
+      end
+
+      #This is the code that actually receives the webhook and parses it per our SDK's method for webhooks.
+
+      def webhook
+      webhook_notification = gateway.webhook_notification.parse(
+      request.params["bt_signature"],
+      request.params["bt_payload"]
+      )
+
+      #This organizes the parsed parameters into an array
+
+      webhook = Webhook.new(
+      :kind =&gt; webhook_notification.kind,
+      :timestamp =&gt; webhook_notification.timestamp,
+      :object =&gt; webhook_notification.inspect
+      )
+
+      #The array is then stored to your database. You can call this array later with a SQL query attached
+      #to pull data from your database and insert it in the above format into the array.
+
+      webhook.save
+
+      #Return a 200 response if successful, and redirect back to the start of this path so other webhooks can be parsed
+      #as they come in.
+
+      return 200
+      redirect_to webhook_path
+      end
+
+      #This code is server-side logic tied to the search function on the homepage. When a search is triggered
+      #by the 'Fetch New Webhook' button, the code below will run.
+
+        def search
+          @merchant_id = ENV["MERCHANT_ID"]
+
+          filter_test = params['filterTest']
+          if filter_test.nil?
+            filter_test = 'null'
+          end
+          filter_au = params['filterAu']
+          if filter_au.nil?
+            filter_au = 'null'
+          end
+          filter_bt_auth = params['filterBtAuth']
+          if filter_bt_auth.nil?
+            filter_bt_auth = 'null'
+          end
+          filter_disbursement = params['filterDisbursement']
+          if filter_disbursement.nil?
+            filter_disbursement = 'null'
+          end
+          filter_dispute = params['filterDispute']
+          if filter_dispute.nil?
+            filter_dispute = 'null'
+          end
+          filter_grant = params['filterGrant']
+          if filter_grant.nil?
+            filter_grant = 'null'
+          end
+          filter_lpm = params['filterLpm']
+          if filter_lpm.nil?
+            filter_lpm = 'null'
+          end
+          filter_oauth = params['filterOauth']
+          if filter_oauth.nil?
+            filter_oauth = 'null'
+          end
+          filter_pm = params['filterPaymentMethod']
+          if filter_pm.nil?
+            filter_pm = 'null'
+          end
+          filter_submerch = params['filterSubmerchant']
+          if filter_submerch.nil?
+            filter_submerch = 'null'
+          end
+          filter_subscription = params['filterSubscription']
+          if filter_subscription.nil?
+            filter_subscription = 'null'
+          end
+          filter_transaction = params['filterTransaction']
+          if filter_transaction.nil?
+            filter_transaction = 'null'
+          end
+
+          start_date = params['startDate']
+          end_date = params['endDate']
+          start_time = params['startTime']
+          end_time = params['endTime']
+          all_unchecked = params['allunchecked']
+
+          start_val = start_date + ' ' + start_time
+          end_val = end_date + ' ' + end_time
+
+    #Below is the logic to execute the database queries based on the filters selected.
+
+          if all_unchecked == 'true'
+
+            if start_date.empty? &amp;&amp; end_date.empty?
+              @webhooks = Webhook.where({created_at: (Time.now. - 1.days)..Time.now})
+              .order('created_at desc')
+              if @webhooks.empty?
+                flash[:danger] = 'No search results'
+                redirect_to root_path
+              else
+                render 'show.html.erb'
+              end
+
+            else
+              @webhooks = Webhook.where({created_at: (start_val)..end_val})
+              .order('created_at desc')
+              if @webhooks.empty?
+                flash[:danger] = 'No search results'
+                redirect_to root_path
+              else
+                render 'show.html.erb'
+              end
+
+            end
+
+          else
+            if start_date.empty? &amp;&amp; end_date.empty?
+              @webhooks = Webhook.where("kind like ?", "%#{filter_test}%")
+              .or(Webhook.where("kind like ?", "%#{filter_au}%")
+              .or(Webhook.where("kind like ?", "%#{filter_bt_auth}%")
+              .or(Webhook.where("kind like ?", "%#{filter_bt_auth}%")
+              .or(Webhook.where("kind like ?", "%#{filter_disbursement}%")
+              .or(Webhook.where("kind like ?", "%#{filter_dispute}%")
+              .or(Webhook.where("kind like ?", "%#{filter_grant}%")
+              .or(Webhook.where("kind like ?", "%#{filter_lpm}%")
+              .or(Webhook.where("kind like ?", "%#{filter_oauth}%")
+              .or(Webhook.where("kind like ?", "%#{filter_pm}%")
+              .or(Webhook.where("kind like ?", "%#{filter_submerch}%")
+              .or(Webhook.where("kind like ?", "%#{filter_subscription}%")
+              .or(Webhook.where("kind like ?", "%#{filter_transaction}%")))))))))))))
+              .where({created_at: (Time.now. - 1.days)..Time.now})
+              .order('created_at desc')
+              if @webhooks.empty?
+                flash[:danger] = 'No search results'
+                redirect_to root_path
+              else
+                render 'show.html.erb'
+              end
+
+            else
+              @webhooks = Webhook.where("kind like ?", "%#{filter_test}%")
+              .or(Webhook.where("kind like ?", "%#{filter_au}%")
+              .or(Webhook.where("kind like ?", "%#{filter_bt_auth}%")
+              .or(Webhook.where("kind like ?", "%#{filter_bt_auth}%")
+              .or(Webhook.where("kind like ?", "%#{filter_disbursement}%")
+              .or(Webhook.where("kind like ?", "%#{filter_dispute}%")
+              .or(Webhook.where("kind like ?", "%#{filter_grant}%")
+              .or(Webhook.where("kind like ?", "%#{filter_lpm}%")
+              .or(Webhook.where("kind like ?", "%#{filter_oauth}%")
+              .or(Webhook.where("kind like ?", "%#{filter_pm}%")
+              .or(Webhook.where("kind like ?", "%#{filter_submerch}%")
+              .or(Webhook.where("kind like ?", "%#{filter_subscription}%")
+              .or(Webhook.where("kind like ?", "%#{filter_transaction}%")))))))))))))
+              .where({created_at: (start_val)..end_val})
+              .order('created_at desc')
+              if @webhooks.empty?
+                flash[:danger] = 'No search results'
+                redirect_to root_path
+              else
+                render 'show.html.erb'
+              end
+
+            end
+          end
+        end
+
+        #Server-side logic for the default search that auto-populates on the homepage.
+          def show
+            @merchant_id = ENV["MERCHANT_ID"]
+            @webhooks = Webhook.where({created_at: (Time.now. - 1.days)..Time.now}).order('created_at desc')
+            render 'show.html.erb'
+          end
+        end
+
+    </code>
+    <code class ="html" style="background-color:#151e1e; color:grey;">
+      CLIENT-SIDE:
+
+      HTML:
+
+      &lt;!DOCTYPE html&gt;
+      &lt;html lang="en" dir="ltr"&gt;
+      &lt;head&gt;
+        &lt;meta charset="utf-8"&gt;
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+        &lt;script&gt;hljs.initHighlightingOnLoad();&lt;/script&gt;
+        &lt;title&gt;Webhooks&lt;/title&gt;
+      &lt;/head&gt;
+      &lt;body style="background-color:black;"&gt;
+        &lt;div align="center" class="headerStyle"&gt;
+          &lt;h1&gt;Webhook Handler&lt;/h1&gt;
+        &lt;/div&gt;
+
+Search Filters:
+
+        &lt;div class="col-md-8 col-md-offset-2 text-center"&gt;
+          &lt;div id="accordion"&gt;
+            &lt;div class="panel-heading text-center"&gt;
+              &lt;h4&gt;&lt;a data-toggle="collapse" data-parent="#accordion" href="#collapse1"  style = "text-decoration:none; color:white; font-weight:light; font-family:monospace;"&gt;Search Options &lt;i class="fas fa-caret-down"&gt;&lt;/i&gt; &lt;/a&gt;&lt;/h4&gt;
+            &lt;/div&gt;
+            &lt;div class="panel-body collapse" id="collapse1"&gt;
+              &lt;div class="panel-heading text-center"&gt;
+                &lt;h5&gt;&lt;a data-toggle="collapse" data-parent="#accordion" href="#collapse2"  style = "text-decoration:none; color:white; font-weight:light; font-family:monospace;"&gt;Webhook Kinds &lt;i class="fas fa-caret-down"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/h5&gt;
+              &lt;/div&gt;
+              &lt;div class="col-md-12 panel-body collapse" id="collapse2" style="color:white; font-family:monospace;"&gt;
+                &lt;%= form_tag("/search", method: "post", id: "payment-form") do %&gt;
+                &lt;div class="form-group text-left"&gt;
+                  &lt;div class="col-md-2 col-md-offset-4" id="searchFilterOptions1"&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="check" id="filterTest" name="filterTest"&gt;Test&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="account_updater" id="filterAu" name="filterAu"&gt;Account Updater&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="connected_merchant" id="filterBtAuth" name="filterBtAuth"&gt;Braintree Auth&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="disburse" id="filterDisbursement" name="filterDisbursement"&gt;Disbursement&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="dispute" id="filterDispute" name="filterDispute"&gt;Dispute&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="granted" id="filterGrant" name="filterGrant"&gt;Grant API&lt;/label&gt;
+                    &lt;/div&gt;
+                  &lt;/div&gt;
+                  &lt;div class="col-md-3 col-md-offset-0" id="searchFilterOptions2"&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="local_payment_completed" id="filterLpm" name="filterLpm"&gt;Local Payment Methods&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="oauth" id="filterOauth" name="filterOauth"&gt;OAuth&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="payment_method_revoked_by_customer" id="filterPaymentMethod" name="filterPaymentMethod"&gt;Payment Method&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="sub_merchant" id="filterSubmerchant" name="filterSubmerchant"&gt;Sub-merchant Account&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="subscription" id="filterSubscription" name="filterSubscription"&gt;Subscription&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;div class="checkbox"&gt;
+                      &lt;label&gt;&lt;input type="checkbox" value="transaction" id="filterTransaction" name="filterTransaction"&gt;Transaction&lt;/label&gt;
+                    &lt;/div&gt;
+                    &lt;input type="hidden" id="allunchecked" name="allunchecked"&gt;
+                  &lt;/div&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+              &lt;div class="panel-heading text-center"&gt;
+                &lt;h5&gt;&lt;a data-toggle="collapse" data-parent="#accordion" href="#collapse3"  style = "text-decoration:none; color:white; font-weight:light; font-family:monospace;"&gt;Date Range &lt;i class="fas fa-caret-down"&gt;&lt;/i&gt;&lt;/a&gt;&lt;/h5&gt;
+              &lt;/div&gt;
+              &lt;div class="col-md-12 text-center panel-body collapse text-center" id="collapse3" style="color:white; font-family:monospace;"&gt;
+                &lt;div class="col-md-4"&gt;
+                &lt;/div&gt;
+                &lt;div class="col-md-4  text-center" id="dateRangeOptions"&gt;
+                  &lt;label for="startDate"&gt;Start Date&lt;/label&gt;
+                  &lt;input type="date" class="form-control text-center" id="startDate"
+                  name="startDate"
+                  min="2012-01-01" max="2050-12-31"&gt;
+
+                  &lt;input type="time" class="form-control text-center" id="startTime"
+                  name="startTime" value="00:00"&gt;
+
+                  &lt;label for="endDate"&gt;End date&lt;/label&gt;
+                  &lt;input type="date" class="form-control text-center" id="endDate"
+                  name="endDate"
+                  min="2012-01-01" max="2050-12-31" &gt;
+
+                  &lt;input type="time" class="form-control text-center" id="endTime"
+                  name="endTime" value="00:00"&gt;
+                &lt;/div&gt;
+                &lt;div class="col-md-4"&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;% end %&gt;
+        &lt;div&gt;
+          &lt;div class="col-md-12 text-center" style="margin-bottom:15px;  margin-top:20px; font-family:monospace"&gt;
+            &lt;button type="submit" id="submit" class="btn btn-default"&gt;Fetch New Webhooks&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/div&gt;
+        &lt;div class ="col-md-12 text-left"&gt;
+          &lt;p style="color:white; font-family:monospace;"&gt;Connected to sandbox ID:
+            &lt;code style="background-color:black; color:chartreuse;"&gt;&lt;%= @merchant_id%&gt;&lt;/code&gt;
+            &lt;button style="font-size:14px" type="button" onclick="reveal()"id="showCode" class="btn btn-default"&gt;Show Guts&lt;/button&gt;
+          &lt;/p&gt;
+        &lt;/div&gt;
+
+Table to show database query results:
+
+        &lt;table class="table table-bordered tables" id="table"&gt;
+          &lt;tr&gt;
+            &lt;th style="width:20%;""&gt; Kind &lt;/th&gt;
+            &lt;th style="width:20%;"&gt; Timestamp &lt;/th&gt;
+            &lt;th style="width:80%;"&gt; Object &lt;/th&gt;
+          &lt;/tr&gt;
+          &lt;% @webhooks.each do |webhook| %&gt;
+          &lt;tr class="tableRows"&gt;
+            &lt;td style="width:15%;"&gt;&lt;%= webhook.kind%&gt;&lt;/td&gt;
+            &lt;td style="width:15%;"&gt;&lt;%= webhook.timestamp%&gt;&lt;/td&gt;
+            &lt;td style="width:70%;"&gt;
+              &lt;a type="button" class="collapsible"&gt;View Result Object&lt;/a&gt;
+              &lt;div class="content"&gt;
+                &lt;button style="background-color:black, color:white;" class="copy"&gt;copy&lt;/button&gt;
+                &lt;div class="textArea"&gt;
+                  &lt;p&gt;&lt;pre&gt;&lt;code&gt;&lt;%= webhook.object%&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/p&gt;
+                &lt;/div&gt;
+              &lt;/div&gt;
+            &lt;/td&gt;
+          &lt;/tr&gt;
+          &lt;% end %&gt;
+        &lt;/table&gt;
+  </code>
+    <code class="JavaScript" style="background-color:#151e1e; color:grey;">
+      JavaScript:
+
+      &lt;script&gt;
+
+      let submit = document.querySelector('#submit');
+      let show = document.querySelector('#showCode');
+      let codeShown = document.querySelector('#codeShown');
+      let form = document.querySelector('#payment-form');
+      let table = document.querySelector('#table');
+
+      //jQuery to copy response to clipboard
+
+      $(document).on('click',".copy",(ev)=&gt;{
+        let textArea =
+        ev.target.closest('tr').querySelector('.textArea');
+        let selection = window.getSelection();
+        let range =  document.createRange();
+        range.selectNodeContents(textArea);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        console.dir( range.toString());
+        document.execCommand('copy');
+      })
+
+      // javascript for collabisble divs
+
+      let coll = document.getElementsByClassName("collapsible");
+      let i;
+
+      for (i = 0; i &lt; coll.length; i++) {
+        coll[i].addEventListener("click", function() {
+          this.classList.toggle("active");
+          let content = this.nextElementSibling;
+          if (content.style.display === "block") {
+            content.style.display = "none";
+          } else {
+            content.style.display = "block";
+          }
+        });
+      }
+
+      //check if all boxes are unchecked on submit
+
+      submit.addEventListener('click', function (event) {
+        let textinputs = document.querySelectorAll('input[type=checkbox]');
+        let empty = [].filter.call( textinputs, function( el ) {
+          return !el.checked
+        });
+
+        if (textinputs.length == empty.length) {
+          document.querySelector('#allunchecked').value = 'true';
+        }
+        event.preventDefault();
+        form.submit();
+      });
+
+      &lt;/script&gt;
+
+    </code></pre></p>
+  </div>
+</body>
+</html>
+
+<script>
+
+  let submit = document.querySelector('#submit');
+  let show = document.querySelector('#showCode');
+  let codeShown = document.querySelector('#codeShown');
+  let form = document.querySelector('#payment-form');
+  let table = document.querySelector('#table');
+
+  //jQuery to copy response to clipboard
+  $(document).on('click',".copy",(ev)=>{
+    let textArea =
+    ev.target.closest('tr').querySelector('.textArea');
+    let selection = window.getSelection();
+    let range =  document.createRange();
+    range.selectNodeContents(textArea);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    console.dir( range.toString());
+    document.execCommand('copy');
+  })
+
+  // javascript for collabisble divs
+  let coll = document.getElementsByClassName("collapsible");
+  let i;
+
+  for (i = 0; i < coll.length; i++) {
+    coll[i].addEventListener("click", function() {
+      this.classList.toggle("active");
+      let content = this.nextElementSibling;
+      if (content.style.display === "block") {
+        content.style.display = "none";
+      } else {
+        content.style.display = "block";
+      }
+    });
+  }
+
+  // function to show code
+  function reveal () {
+    let v = $(codeShown).is(":hidden");
+    if(v === true){
+      codeShown.removeAttribute('hidden', true);
+      table.setAttribute('hidden', true);
+    } else {
+      codeShown.setAttribute('hidden', true);
+      table.removeAttribute('hidden', true);
+    }
+  };
+
+  submit.addEventListener('click', function (event) {
+    //check if all boxes are unchecked on submit
+    let textinputs = document.querySelectorAll('input[type=checkbox]');
+    let empty = [].filter.call( textinputs, function( el ) {
+      return !el.checked
+    });
+
+    if (textinputs.length == empty.length) {
+      document.querySelector('#allunchecked').value = 'true';
+    }
+    event.preventDefault();
+    form.submit();
+  });
+//
+</script>
