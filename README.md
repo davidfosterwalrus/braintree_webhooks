@@ -4,7 +4,7 @@
 
 Hello! Welcome to the Braintree Webhook Handler. This is a web application that can be downloaded, configured with your Braintree API Keys, and launched to the endpoint in your choice. In this example, we'll recommend Heroku, but you can use whatever you'd like.
 
-This tool allows you to receive Braintree webhooks at your endpoint, and will parse the payloads, store them in a database, and allow you to retrieve them later with the built-in search engine. The UI sorts your webhook results into a table in  sdescending order by timestamp. The table displays `webhook_kind`, `timestamp`, and allows you to expand the full result object - which can then be copied to the clipboard with the ease of a button click.
+This tool allows you to receive Braintree webhooks at your endpoint, and will parse the payloads, store them in a database, and allow you to retrieve them later with the built-in search engine. The UI sorts your webhook results into a table in descending order by timestamp. The table displays `webhook_kind`, `timestamp`, and allows you to expand the full result object - which can then be copied to the clipboard with the ease of a button click.
 
 The homepage loads webhooks received in the last 24 hours by default. If you attempt a search that yields `no results`, the default of results from the past 24 hours will be displayed instead alongside a message that informs you that no results were returned.
 
